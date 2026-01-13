@@ -1,84 +1,53 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import useSorting from "./hooks/useSorting";
+import useTodos from "./hooks/useTodos";
+
+import Header from "./Components/Header";
+import useColorMode from "./hooks/useColorMode";
 
 function App() {
-  const [todos, setTodos] = useState(() => {
-    const savedTodos = localStorage.getItem("todos");
-    return savedTodos
-      ? JSON.parse(savedTodos)
-      : [
-          { id: 1, text: "do laundry", completed: false, editing: false },
-          { id: 2, text: "eat hotdogs", completed: false, editing: false },
-        ];
-  });
+  const {
+    todos,
+    addTodo,
+    toggleCompleted,
+    deleteTodo,
+    toggleEdit,
+    handleTodoChange,
+  } = useTodos();
 
+  const [sortBy, setSortBy] = useSorting();
   const [newTodo, setNewTodo] = useState("");
 
-  const [sortBy, setSortBy] = useState(() => {
-    const savedSorting = localStorage.getItem("sorting");
-    return savedSorting ? JSON.parse(savedSorting) : "Date";
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved ? JSON.parse(saved) : false;
   });
-
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-    localStorage.setItem("sorting", JSON.stringify(sortBy));
-  }, [todos, sortBy]);
-
-  function addTodo() {
-    if (newTodo.trim() === "") return;
-
-    setTodos((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        text: newTodo,
-        completed: false,
-        editing: false,
-      },
-    ]);
-
-    setNewTodo("");
-  }
-
-  function toggleCompleted(id) {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  }
-
-  function deleteTodo(id) {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-  }
-
-  function toggleEdit(id) {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, editing: !todo.editing } : todo
-      )
-    );
-  }
-
-  function handleTodoChange(id, value) {
-    setTodos((prev) =>
-      prev.map((todo) => (todo.id === id ? { ...todo, text: value } : todo))
-    );
-  }
-
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
   const sortedTodos = [...todos].sort((a, b) => {
     if (sortBy === "Name") {
-      return a.text.localeCompare(b.text); // alphabetical
+      return a.text.localeCompare(b.text);
     } else if (sortBy === "Status") {
-      return a.completed - b.completed; // incomplete first
+      return a.completed - b.completed;
     } else if (sortBy === "Date") {
-      return a.id - b.id; // assuming id ~ creation time
+      return a.id - b.id;
     }
     return 0;
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
+    <div
+      className={`min-h-screen flex flex-col items-center justify-start p-4 transition-colors duration-500 ${
+        darkMode ? "dark" : "light"
+      }`}
+    >
+      <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+      <div
+        className={`w-full max-w-md rounded-2xl shadow-lg p-6 transition-colors duration-500 ${
+          darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"
+        }`}
+      >
         <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
           Todo List
         </h1>
@@ -89,11 +58,23 @@ function App() {
             placeholder="Add a new task..."
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`flex-1 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 transition-colors duration-500 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-gray-100 focus:ring-green-500"
+                : "bg-gray-100 border-gray-300 text-gray-800 focus:ring-blue-500"
+            }`}
           />
+
           <button
-            onClick={addTodo}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            onClick={() => {
+              addTodo(newTodo);
+              setNewTodo("");
+            }}
+            className={`px-4 py-2 rounded-lg transition-colors duration-500 ${
+              darkMode
+                ? "bg-green-500 text-gray-900 hover:bg-green-600"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
             Add
           </button>
@@ -103,7 +84,11 @@ function App() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors duration-500 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-gray-100 focus:ring-green-500"
+                : "bg-gray-100 border-gray-300 text-gray-800 focus:ring-blue-500"
+            }`}
           >
             <option value="Date">Date</option>
             <option value="Name">Name</option>
@@ -115,7 +100,11 @@ function App() {
           {sortedTodos.map((todo) => (
             <li
               key={todo.id}
-              className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg"
+              className={`flex items-center justify-between px-4 py-3 rounded-lg transition-colors duration-500 ${
+                darkMode
+                  ? "bg-gray-700 text-gray-100"
+                  : "bg-gray-50 text-gray-800"
+              }`}
             >
               <div className="flex items-center gap-3 flex-1">
                 <input
@@ -130,8 +119,11 @@ function App() {
                     type="text"
                     value={todo.text}
                     onChange={(e) => handleTodoChange(todo.id, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-800 
-             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`flex-1 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 transition-colors duration-500 ${
+                      darkMode
+                        ? "bg-gray-600 border-gray-500 text-gray-100 focus:ring-green-500"
+                        : "bg-gray-100 border-gray-300 text-gray-800 focus:ring-blue-500"
+                    }`}
                   />
                 ) : (
                   <span
@@ -149,13 +141,21 @@ function App() {
               <div className="flex gap-2 ml-3">
                 <button
                   onClick={() => toggleEdit(todo.id)}
-                  className="text-sm text-yellow-600 hover:text-yellow-700"
+                  className={`text-sm transition-colors duration-500 ${
+                    darkMode
+                      ? "text-yellow-400 hover:text-yellow-300"
+                      : "text-yellow-600 hover:text-yellow-700"
+                  }`}
                 >
                   {todo.editing ? "Save" : "Edit"}
                 </button>
                 <button
                   onClick={() => deleteTodo(todo.id)}
-                  className="text-sm text-red-600 hover:text-red-700"
+                  className={`text-sm transition-colors duration-500 ${
+                    darkMode
+                      ? "text-red-400 hover:text-red-300"
+                      : "text-red-600 hover:text-red-700"
+                  }`}
                 >
                   Delete
                 </button>

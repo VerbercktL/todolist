@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* styles.css */
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 1s, color 1s;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.dark {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.light {
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+}
+
+button.dark {
+  background-color: #333;
+  color: #f0f0f0;
+}
+
+button.light {
+  background-color: #ddd;
+  color: #1a1a1a;
+}
